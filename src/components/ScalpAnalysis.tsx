@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,17 +41,48 @@ const ScalpAnalysis = () => {
       console.log("已创建文件对象:", file.name, file.size, file.type);
       
       // 添加健康检查
-      console.log("检查 API 健康状态...");
-      const healthCheck = await api.checkHealth();
-      console.log("API 健康状态:", healthCheck);
-      
-      if (!healthCheck.success) {
-        throw new Error("API 服务不可用，请检查后端服务是否正常运行");
+      console.log("开始健康检查...");
+      try {
+        const healthCheck = await api.checkHealth();
+        console.log("健康检查响应:", healthCheck);
+        
+        if (!healthCheck.success) {
+          if (healthCheck.error_code === 'NETWORK_ERROR') {
+            console.error("健康检查网络错误:", healthCheck.error_details);
+            throw new Error(`无法连接到后端服务 (${healthCheck.error})`);
+          } else {
+            console.error("健康检查失败:", healthCheck);
+            throw new Error(healthCheck.error || "API 服务不可用，请检查后端服务是否正常运行");
+          }
+        }
+
+        // 验证健康检查结果
+        const healthStatus = healthCheck.result;
+        if (healthStatus.status !== 'healthy') {
+          console.error("后端服务不健康:", healthStatus);
+          throw new Error(`后端服务状态异常: ${healthStatus.status}`);
+        }
+
+        console.log("健康检查通过，后端服务正常运行");
+      } catch (healthError) {
+        console.error("健康检查异常:", {
+          错误类型: healthError.constructor.name,
+          错误信息: healthError.message,
+          错误堆栈: healthError.stack
+        });
+        throw healthError;
       }
       
+      console.log("开始发送分析请求...");
       const result = await api.analyzeScalp(file);
       
-      console.log("分析结果:", result);
+      console.log("分析响应:", {
+        成功: result.success,
+        错误码: result.error_code,
+        错误信息: result.error,
+        详细信息: result.error_details,
+        结果: result.result
+      });
       
       if (result.success && result.result) {
         navigate("/result", { state: { image, analysisResult: result.result } });
