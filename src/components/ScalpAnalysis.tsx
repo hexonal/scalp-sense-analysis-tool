@@ -31,19 +31,26 @@ const ScalpAnalysis = () => {
     setAnalyzing(true);
     
     try {
+      console.log("开始分析头皮图片...");
+      
       // Convert base64 to file
       const response = await fetch(image);
       const blob = await response.blob();
       const file = new File([blob], "scalp-image.jpg", { type: "image/jpeg" });
       
+      console.log("已创建文件对象:", file.name, file.size, file.type);
+      
       const result = await api.analyzeScalp(file);
       
-      if (result.success) {
+      console.log("分析结果:", result);
+      
+      if (result.success && result.result) {
         navigate("/result", { state: { image, analysisResult: result.result } });
       } else {
-        throw new Error(result.error || '分析失败');
+        throw new Error(result.error || '分析失败，服务器未返回有效结果');
       }
     } catch (error) {
+      console.error("分析过程中出错:", error);
       toast({
         title: "分析失败",
         description: error instanceof Error ? error.message : "请稍后重试",

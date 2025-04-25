@@ -18,6 +18,8 @@ const request = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
+    console.log(`Making API request to: ${url}`, options);
+    
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -26,15 +28,31 @@ const request = async <T>(
       }
     });
     
+    console.log(`Response status: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      // 尝试解析错误响应
+      let errorText = '';
+      try {
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        errorText = errorData;
+      } catch (parseError) {
+        console.error('Failed to parse error response:', parseError);
+      }
+      
+      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
     }
     
     const data = await response.json();
+    console.log('API response data:', data);
     return data;
   } catch (error) {
     console.error('API request failed:', error);
-    throw error;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '未知错误'
+    };
   }
 };
 
@@ -42,6 +60,8 @@ export const api = {
   analyzeScalp: async (imageFile: File): Promise<ApiResponse<AnalysisResult>> => {
     const formData = new FormData();
     formData.append('image', imageFile);
+    
+    console.log('Analyzing scalp with file:', imageFile.name, imageFile.size, imageFile.type);
 
     return request<AnalysisResult>(`${API_BASE_URL}/analyze`, {
       method: 'POST',
