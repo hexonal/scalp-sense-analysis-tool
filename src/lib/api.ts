@@ -1,10 +1,10 @@
 
 import { AnalysisResult } from './types';
 
-// 使用相对路径，这样请求会通过Vite的代理
+// 保持一致的 API 基础 URL 配置
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
   ? '/api' 
-  : 'https://api.yourservice.com';
+  : 'https://api.yourservice.com/api';  // 确保生产环境也包含 /api 前缀
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -64,7 +64,7 @@ export const api = {
     
     console.log('Analyzing scalp with file:', imageFile.name, imageFile.size, imageFile.type);
 
-    // 确保路径完全匹配："/api/analyze"
+    // 确保使用正确的路径：现在变为 "/api/analyze"
     return request<AnalysisResult>(`${API_BASE_URL}/analyze`, {
       method: 'POST',
       body: formData,
