@@ -59,10 +59,12 @@ const request = async <T>(
 export const api = {
   analyzeScalp: async (imageFile: File): Promise<ApiResponse<AnalysisResult>> => {
     const formData = new FormData();
+    // 确保参数名称与后端期望的一致："image"
     formData.append('image', imageFile);
     
     console.log('Analyzing scalp with file:', imageFile.name, imageFile.size, imageFile.type);
 
+    // 确保路径完全匹配："/api/analyze"
     return request<AnalysisResult>(`${API_BASE_URL}/analyze`, {
       method: 'POST',
       body: formData,

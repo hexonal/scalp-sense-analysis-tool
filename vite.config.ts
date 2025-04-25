@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
+        // 确保请求路径正确匹配后端期望的路径
+        rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },
