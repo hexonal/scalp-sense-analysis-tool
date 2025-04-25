@@ -1,9 +1,9 @@
 
 import { AnalysisResult } from './types';
 
-// 微信小程序开发环境和生产环境的基础URL
+// 使用相对路径，这样请求会通过Vite的代理
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:8000' 
+  ? '/api' 
   : 'https://api.yourservice.com';
 
 export interface ApiResponse<T> {
@@ -21,7 +21,7 @@ const request = async <T>(
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
         ...options.headers,
       }
     });
@@ -43,7 +43,7 @@ export const api = {
     const formData = new FormData();
     formData.append('image', imageFile);
 
-    return request<AnalysisResult>(`${API_BASE_URL}/api/analyze`, {
+    return request<AnalysisResult>(`${API_BASE_URL}/analyze`, {
       method: 'POST',
       body: formData,
     });
@@ -54,6 +54,6 @@ export const api = {
     services: Record<string, boolean>; 
     timestamp: string 
   }>> => {
-    return request(`${API_BASE_URL}/api/health`);
+    return request(`${API_BASE_URL}/health`);
   },
 };
