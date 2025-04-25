@@ -1,7 +1,10 @@
 
 import { AnalysisResult } from './types';
 
-const API_BASE_URL = 'http://localhost:8000';
+// 微信小程序开发环境和生产环境的基础URL
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:8000' 
+  : 'https://api.yourservice.com';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -10,12 +13,29 @@ export interface ApiResponse<T> {
   error_code?: string;
 }
 
-const handleResponse = async <T>(response: Response): Promise<ApiResponse<T>> => {
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || 'Request failed');
+const request = async <T>(
+  url: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> => {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
   }
-  return data;
 };
 
 export const api = {
@@ -23,24 +43,17 @@ export const api = {
     const formData = new FormData();
     formData.append('image', imageFile);
 
-    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+    return request<AnalysisResult>(`${API_BASE_URL}/api/analyze`, {
       method: 'POST',
       body: formData,
-      headers: {
-        'X-API-Key': 'your_api_key', // 注意：实际项目中应从环境变量获取
-      },
     });
-
-    return handleResponse<AnalysisResult>(response);
   },
 
-  checkHealth: async (): Promise<ApiResponse<{ status: string; services: Record<string, boolean>; timestamp: string }>> => {
-    const response = await fetch(`${API_BASE_URL}/api/health`, {
-      headers: {
-        'X-API-Key': 'your_api_key',
-      },
-    });
-
-    return handleResponse<{ status: string; services: Record<string, boolean>; timestamp: string }>(response);
+  checkHealth: async (): Promise<ApiResponse<{ 
+    status: string; 
+    services: Record<string, boolean>; 
+    timestamp: string 
+  }>> => {
+    return request(`${API_BASE_URL}/api/health`);
   },
 };
