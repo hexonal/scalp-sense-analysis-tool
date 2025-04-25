@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        // 保留 /api 前缀，因为后端需要它
+        // 保留 /api 前缀，确保后端正确接收
         rewrite: (path) => path
       }
     }
