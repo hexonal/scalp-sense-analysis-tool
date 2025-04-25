@@ -1,12 +1,11 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { CustomProgress } from "@/components/ui/custom-progress";
 import { Separator } from "@/components/ui/separator";
 import { 
   AlertCircle, 
   DropletIcon, 
-  Flame, 
+  Flame,
   Clock, 
   CheckCircle2, 
   BeakerIcon, 
@@ -72,11 +71,13 @@ const AnalysisResults = ({
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">问题严重程度：{severity.level}</span>
-                  <span className={`text-sm font-semibold ${getSeverityColor(severity.level)}`}>{severity.level}</span>
+                  <span className="text-sm font-medium">问题严重程度</span>
+                  <span className={`text-sm font-semibold ${getSeverityColor(severity.level)}`}>
+                    {severity.level}
+                  </span>
                 </div>
-                <Progress 
-                  value={getSeverityProgress(severity.level)} 
+                <CustomProgress 
+                  value={getSeverityProgress(severity.level)}
                   className="h-2"
                   indicatorClassName={getSeverityProgressColor(severity.level)}
                 />

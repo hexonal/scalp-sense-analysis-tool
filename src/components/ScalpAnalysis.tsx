@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import UploadPhoto from "./UploadPhoto";
+import { Loader2, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
+import UploadPhoto from "./UploadPhoto";
 
 const ScalpAnalysis = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -73,7 +73,10 @@ const ScalpAnalysis = () => {
                 正在分析头皮...
               </>
             ) : (
-              "开始分析"
+              <>
+                <Upload className="mr-2 h-5 w-5" />
+                开始分析
+              </>
             )}
           </Button>
         </div>

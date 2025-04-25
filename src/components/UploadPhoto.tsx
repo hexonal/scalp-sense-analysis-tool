@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 
@@ -8,9 +8,7 @@ const UploadPhoto = ({
 }: {
   onUpload: (image: string) => void;
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
   
   const handleFileChange = (files: FileList | null) => {
     if (files && files[0]) {
@@ -38,42 +36,18 @@ const UploadPhoto = ({
     }
   };
   
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
-  
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    handleFileChange(e.dataTransfer.files);
-  };
-  
   const clearPreview = () => {
     setPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
   
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto">
       <input
-        ref={fileInputRef}
         type="file"
         accept="image/*"
         className="hidden"
         onChange={(e) => handleFileChange(e.target.files)}
+        id="upload-input"
       />
       
       {preview ? (
@@ -93,32 +67,14 @@ const UploadPhoto = ({
           </Button>
         </div>
       ) : (
-        <div
-          className={`w-full h-80 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors ${
-            dragActive ? 'border-scalp-400 bg-scalp-50' : 'border-scalp-200 bg-scalp-50/30'
-          }`}
-          onClick={handleButtonClick}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
+        <label 
+          htmlFor="upload-input"
+          className="w-full h-80 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors border-scalp-200 bg-scalp-50/30 hover:border-scalp-400 hover:bg-scalp-50"
         >
           <Upload className="h-16 w-16 text-scalp-400 mb-4" />
-          <p className="text-lg font-medium text-scalp-700">点击或拖放图片到此处</p>
+          <p className="text-lg font-medium text-scalp-700">点击上传图片</p>
           <p className="text-sm text-scalp-600 mt-2">支持 JPG, PNG 格式 (最大 5MB)</p>
-        </div>
-      )}
-      
-      {!preview && (
-        <Button
-          variant="default"
-          size="lg"
-          className="mt-4 bg-scalp-500 hover:bg-scalp-600 w-full"
-          onClick={handleButtonClick}
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          选择头皮图片
-        </Button>
+        </label>
       )}
     </div>
   );
