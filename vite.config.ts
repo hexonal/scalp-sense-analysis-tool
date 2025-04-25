@@ -13,8 +13,21 @@ export default defineConfig(({ mode }) => ({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
-        // 保留 /api 前缀，确保后端正确接收
-        rewrite: (path) => path
+        rewrite: (path) => path,
+        // 添加超时设置
+        timeout: 30000,
+        // 添加错误处理
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('代理错误:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('正在发送代理请求:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('收到代理响应:', proxyRes.statusCode, req.url);
+          });
+        }
       }
     }
   },

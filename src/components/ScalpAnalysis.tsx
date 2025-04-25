@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
 import UploadPhoto from "./UploadPhoto";
@@ -11,6 +11,7 @@ import UploadPhoto from "./UploadPhoto";
 const ScalpAnalysis = () => {
   const [image, setImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [retries, setRetries] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -40,6 +41,15 @@ const ScalpAnalysis = () => {
       
       console.log("已创建文件对象:", file.name, file.size, file.type);
       
+      // 添加健康检查
+      console.log("检查 API 健康状态...");
+      const healthCheck = await api.checkHealth();
+      console.log("API 健康状态:", healthCheck);
+      
+      if (!healthCheck.success) {
+        throw new Error("API 服务不可用，请检查后端服务是否正常运行");
+      }
+      
       const result = await api.analyzeScalp(file);
       
       console.log("分析结果:", result);
@@ -51,14 +61,29 @@ const ScalpAnalysis = () => {
       }
     } catch (error) {
       console.error("分析过程中出错:", error);
+      
+      // 显示更具体的错误信息
+      let errorMessage = error instanceof Error ? error.message : "请稍后重试";
+      
+      if (errorMessage.includes("Failed to fetch") || 
+          errorMessage.includes("NetworkError") ||
+          errorMessage.includes("ECONNRESET")) {
+        errorMessage = "无法连接到分析服务器，请确保后端服务正在运行";
+      }
+      
       toast({
         title: "分析失败",
-        description: error instanceof Error ? error.message : "请稍后重试",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setAnalyzing(false);
     }
+  };
+  
+  const retryAnalysis = () => {
+    setRetries(prev => prev + 1);
+    startAnalysis();
   };
   
   return (
@@ -86,6 +111,19 @@ const ScalpAnalysis = () => {
               </>
             )}
           </Button>
+          
+          {retries > 0 && (
+            <div className="mt-4 text-center">
+              <Button 
+                variant="outline" 
+                onClick={retryAnalysis} 
+                disabled={analyzing}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                重试 ({retries})
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -18,7 +18,11 @@ const request = async <T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
   try {
-    console.log(`Making API request to: ${url}`, options);
+    console.log(`准备发送 API 请求: ${url}`, {
+      method: options.method || 'GET',
+      headers: options.headers || {},
+      hasBody: !!options.body
+    });
     
     const response = await fetch(url, {
       ...options,
@@ -28,30 +32,40 @@ const request = async <T>(
       }
     });
     
-    console.log(`Response status: ${response.status}`);
+    console.log(`收到响应状态码: ${response.status}`);
     
     if (!response.ok) {
       // 尝试解析错误响应
       let errorText = '';
       try {
         const errorData = await response.text();
-        console.error('Error response:', errorData);
+        console.error('错误响应:', errorData);
         errorText = errorData;
       } catch (parseError) {
-        console.error('Failed to parse error response:', parseError);
+        console.error('解析错误响应失败:', parseError);
       }
       
-      throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      throw new Error(`API 请求失败，状态码 ${response.status}: ${errorText}`);
     }
     
     const data = await response.json();
-    console.log('API response data:', data);
+    console.log('API 响应数据:', data);
     return data;
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error('API 请求失败:', error);
+    
+    if (error instanceof TypeError && error.message.includes('NetworkError')) {
+      console.error('网络错误: 可能是 CORS 问题或服务器未运行');
+    }
+    
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.error('获取失败: 后端服务器可能未运行或不可访问');
+    }
+    
     return {
       success: false,
-      error: error instanceof Error ? error.message : '未知错误'
+      error: error instanceof Error ? error.message : '未知错误',
+      error_code: error instanceof TypeError ? 'NETWORK_ERROR' : 'API_ERROR'
     };
   }
 };
@@ -59,12 +73,16 @@ const request = async <T>(
 export const api = {
   analyzeScalp: async (imageFile: File): Promise<ApiResponse<AnalysisResult>> => {
     const formData = new FormData();
-    // 确保参数名称与后端期望的一致："image"
     formData.append('image', imageFile);
     
-    console.log('Analyzing scalp with file:', imageFile.name, imageFile.size, imageFile.type);
+    console.log('开始分析头皮图片:', 
+      { 
+        文件名: imageFile.name, 
+        大小: `${(imageFile.size / 1024).toFixed(2)}KB`, 
+        类型: imageFile.type 
+      }
+    );
 
-    // 确保使用正确的路径：现在变为 "/api/analyze"
     return request<AnalysisResult>(`${API_BASE_URL}/analyze`, {
       method: 'POST',
       body: formData,
