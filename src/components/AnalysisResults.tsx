@@ -2,29 +2,28 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomProgress } from "@/components/ui/custom-progress";
 import { Separator } from "@/components/ui/separator";
-import { 
-  AlertCircle, 
-  DropletIcon, 
+import {
+  AlertCircle,
+  DropletIcon,
   Flame,
-  Clock, 
-  CheckCircle2, 
-  BeakerIcon, 
-  ShowerHead 
+  Clock,
+  CheckCircle2,
+  BeakerIcon,
+  ShowerHead
 } from "lucide-react";
 import { AnalysisResult } from "@/lib/types";
-import { mockAnalysisResult } from "@/lib/mockData";
 
 interface AnalysisResultsProps {
   image: string;
-  analysisResult?: AnalysisResult;
+  analysisResult: AnalysisResult;
 }
 
-const AnalysisResults = ({ 
+const AnalysisResults = ({
   image,
-  analysisResult = mockAnalysisResult 
+  analysisResult
 }: AnalysisResultsProps) => {
-  const { scalpType, severity, analysis, solutions, aiSuggestions } = analysisResult;
-  
+  const { scalp_type, severity, analysis, solutions, ai_suggestions } = analysisResult;
+
   const getSeverityColor = (level: string) => {
     switch (level.toLowerCase()) {
       case "轻度": return "text-green-500";
@@ -33,7 +32,7 @@ const AnalysisResults = ({
       default: return "text-blue-500";
     }
   };
-  
+
   const getSeverityProgressColor = (level: string) => {
     switch (level.toLowerCase()) {
       case "轻度": return "bg-green-500";
@@ -42,7 +41,7 @@ const AnalysisResults = ({
       default: return "bg-blue-500";
     }
   };
-  
+
   const getSeverityProgress = (level: string) => {
     switch (level.toLowerCase()) {
       case "轻度": return 33;
@@ -51,16 +50,16 @@ const AnalysisResults = ({
       default: return 50;
     }
   };
-  
+
   return (
     <div className="w-full max-w-3xl mx-auto space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="overflow-hidden">
           <div className="h-64 overflow-hidden">
-            <img 
-              src={image} 
-              alt="头皮图片" 
-              className="w-full h-full object-cover" 
+            <img
+              src={image}
+              alt="头皮图片"
+              className="w-full h-full object-cover"
             />
           </div>
           <CardHeader className="pb-2">
@@ -76,64 +75,64 @@ const AnalysisResults = ({
                     {severity.level}
                   </span>
                 </div>
-                <CustomProgress 
+                <CustomProgress
                   value={getSeverityProgress(severity.level)}
                   className="h-2"
                   indicatorClassName={getSeverityProgressColor(severity.level)}
                 />
               </div>
-              
+
               <div className="flex space-x-3 text-sm text-muted-foreground">
                 <div className="flex flex-col items-center">
                   <DropletIcon className="h-5 w-5 text-blue-500 mb-1" />
-                  <span>油脂：{Math.round(analysis.features.oilRatio * 100)}%</span>
+                  <span>油脂：{Math.round(analysis.features.oil_ratio * 100)}%</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <Flame className="h-5 w-5 text-red-500 mb-1" />
-                  <span>发红：{Math.round(analysis.features.redRatio * 100)}%</span>
+                  <span>发红：{Math.round(analysis.features.red_ratio * 100)}%</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <AlertCircle className="h-5 w-5 text-yellow-500 mb-1" />
-                  <span>纹理：{Math.round(analysis.features.textureRatio * 100)}%</span>
+                  <span>纹理：{Math.round(analysis.features.texture_ratio * 100)}%</span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="text-xl text-scalp-800 flex items-center">
               <BeakerIcon className="h-5 w-5 mr-2 text-scalp-500" />
               头皮类型
             </CardTitle>
-            <CardDescription>{scalpType.name}</CardDescription>
+            <CardDescription>{scalp_type.name}</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm mb-4">{scalpType.description}</p>
-            
+            <p className="text-sm mb-4">{scalp_type.description}</p>
+
             <h4 className="font-medium text-sm mb-2">可能原因：</h4>
             <ul className="list-disc pl-5 text-sm space-y-1 mb-4">
-              {scalpType.causes.map((cause, index) => (
+              {scalp_type.causes.map((cause, index) => (
                 <li key={index}>{cause}</li>
               ))}
             </ul>
-            
+
             <Separator className="my-4" />
-            
+
             <h4 className="font-medium flex items-center mb-3">
               <ShowerHead className="h-4 w-4 mr-2 text-scalp-500" />
               产品建议
             </h4>
             <div className="space-y-2 text-sm">
-              <p><strong>洗发水：</strong> {scalpType.productRecommendations.shampoo}</p>
-              <p><strong>使用频率：</strong> {scalpType.productRecommendations.frequency}</p>
-              <p><strong>特殊护理：</strong> {scalpType.productRecommendations.specialCare}</p>
+              <p><strong>洗发水：</strong> {scalp_type.product_recommendations.shampoo}</p>
+              <p><strong>使用频率：</strong> {scalp_type.product_recommendations.frequency}</p>
+              <p><strong>特殊护理：</strong> {scalp_type.product_recommendations.special_care}</p>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -152,16 +151,16 @@ const AnalysisResults = ({
                   ))}
                 </ul>
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <h4 className="font-medium text-sm mb-2 flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-scalp-500" />
                   长期护理计划：
                 </h4>
                 <ul className="list-disc pl-5 text-sm space-y-1">
-                  {solutions.carePlan.map((step, index) => (
+                  {solutions.care_plan.map((step, index) => (
                     <li key={index}>{step}</li>
                   ))}
                 </ul>
@@ -169,29 +168,29 @@ const AnalysisResults = ({
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="text-xl text-scalp-800">AI 详细分析</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm mb-4">{aiSuggestions.fullAnalysis}</p>
-            
+            <p className="text-sm mb-4">{ai_suggestions.full_analysis}</p>
+
             <h4 className="font-medium text-sm mb-2">推荐产品：</h4>
             <ul className="text-sm space-y-1 mb-4">
-              {Object.entries(aiSuggestions.productRecommendations).map(([type, product], index) => (
+              {Object.entries(ai_suggestions.product_recommendations).map(([type, product], index) => (
                 <li key={index} className="flex items-start">
                   <span className="font-medium mr-2">{type}:</span>
                   <span>{product}</span>
                 </li>
               ))}
             </ul>
-            
+
             <Separator className="my-4" />
-            
+
             <h4 className="font-medium text-sm mb-2">即时建议：</h4>
             <ul className="list-disc pl-5 text-sm space-y-1">
-              {aiSuggestions.immediateSolutions.map((solution, index) => (
+              {ai_suggestions.immediate_solutions.map((solution, index) => (
                 <li key={index}>{solution}</li>
               ))}
             </ul>

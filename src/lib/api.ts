@@ -26,7 +26,7 @@ const request = async <T>(
     const fullUrl = process.env.NODE_ENV === 'development'
       ? `/api/${apiPath}`  // 开发环境添加/api前缀
       : `${API_BASE_URL}/api/${apiPath}`;  // 生产环境使用完整URL
-    
+
     console.log('【请求开始】', {
       原始路径: url,
       API路径: apiPath,
@@ -41,7 +41,7 @@ const request = async <T>(
         路径: '/api'
       }
     });
-    
+
     const response = await fetch(fullUrl, {
       ...options,
       headers: {
@@ -49,7 +49,7 @@ const request = async <T>(
         ...options.headers,
       }
     });
-    
+
     console.log('【响应状态】', {
       状态码: response.status,
       状态文本: response.statusText,
@@ -57,7 +57,7 @@ const request = async <T>(
       响应类型: response.type,
       响应头: Object.fromEntries(response.headers.entries())
     });
-    
+
     if (!response.ok) {
       let errorText = '';
       let errorData = null;
@@ -80,10 +80,10 @@ const request = async <T>(
       } catch (parseError) {
         console.error('【解析错误】', parseError);
       }
-      
+
       throw new Error(`API请求失败 [${response.status}]: ${errorText}`);
     }
-    
+
     let responseData;
     const responseText = await response.text();
     try {
@@ -97,7 +97,7 @@ const request = async <T>(
       });
       throw new Error('响应格式错误：无法解析JSON');
     }
-    
+
     return responseData;
   } catch (error) {
     console.error('【请求失败】', {
@@ -108,7 +108,7 @@ const request = async <T>(
       请求URL: url,
       请求方法: options.method || 'GET'
     });
-    
+
     if (error instanceof TypeError) {
       if (error.message.includes('NetworkError')) {
         console.error('【网络错误】可能是CORS问题或服务器未运行');
@@ -116,7 +116,7 @@ const request = async <T>(
         console.error('【连接失败】后端服务器可能未运行或不可访问');
       }
     }
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : '未知错误',
@@ -141,7 +141,7 @@ export const api = {
 
       // 创建表单数据
       const formData = new FormData();
-      formData.append('image', imageFile);
+      formData.append('file', imageFile);
 
       // 发送请求
       console.log('开始分析头皮图片:', {
@@ -150,16 +150,22 @@ export const api = {
         时间戳: new Date().toISOString()
       });
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 120秒超时
+
       const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: 'POST',
         body: formData,
         headers: {
           'Accept': 'application/json',
-        }
+        },
+        signal: controller.signal
       }).then(checkResponseStatus);
 
+      clearTimeout(timeoutId);
+
       const data = await response.json();
-      
+
       console.log('收到分析响应:', {
         状态: response.status,
         成功: data.success,
@@ -190,21 +196,21 @@ export const api = {
     }
   },
 
-  checkHealth: async (): Promise<ApiResponse<{ 
-    status: string; 
-    services: Record<string, boolean>; 
-    timestamp: string 
+  checkHealth: async (): Promise<ApiResponse<{
+    status: string;
+    services: Record<string, boolean>;
+    timestamp: string
   }>> => {
     type HealthCheckResponse = {
       status: string;
       services: Record<string, boolean>;
       timestamp: string;
     };
-    
+
     try {
       const response = await request<HealthCheckResponse>('health');
       console.log('【健康检查响应】', response);
-      
+
       // 处理直接返回的健康检查对象
       if ('status' in response && !('success' in response)) {
         console.log('【健康检查】收到直接响应格式');
@@ -213,7 +219,7 @@ export const api = {
           result: response as HealthCheckResponse
         };
       }
-      
+
       // 处理已经包装在ApiResponse中的响应
       if ('success' in response) {
         console.log('【健康检查】收到ApiResponse格式');
@@ -223,7 +229,7 @@ export const api = {
         // 如果是失败的ApiResponse，直接返回
         return response;
       }
-      
+
       // 如果响应格式不符合预期
       console.error('【健康检查】响应格式异常:', response);
       return {
